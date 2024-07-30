@@ -10,9 +10,13 @@ from sqliteUtils import setup_sqlite, insert_to_db, hash_exists, get_unprinted_h
     count_unprinted_before_hash, count_unprinted_rows, mark_as_printed, get_next_unprinted_hash, get_timestamp
 from flask_stuff.utils import getFilenameWithoutExtension, allowed_file, hashFileName, getFileExtension
 import threading
+from gpiozero import LED
 from escpos.printer import Serial
 
 USE_PRINTER = False
+relayPrinter = None
+# if USE_PRINTER:
+    # relayPrinter = LED(25)
 
 thread_event = threading.Event()
 
