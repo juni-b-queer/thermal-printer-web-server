@@ -1,2 +1,6 @@
 static/converted
 static/uploads
+.venv
+.idea
+__pycache__
+data.db
