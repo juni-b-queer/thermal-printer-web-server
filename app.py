@@ -12,6 +12,7 @@ from flask_stuff.utils import getFilenameWithoutExtension, allowed_file, hashFil
 import threading
 from escpos.printer import Serial
 
+USE_PRINTER = False
 
 thread_event = threading.Event()
 
@@ -27,15 +28,19 @@ def readyToRip(p):
         p.textln('')
     app.logger.info('Ready to Rip')
 
+def printToPrinter(filehash):
+    dt = datetime.strptime(get_timestamp(filehash), '%Y-%m-%d %H:%M:%S')
+    p = Serial(devfile='/dev/ttyS0', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1.00, dsrdtr=True)
+    p.image('./static/converted/' + filehash + '.bmp')
+    p.textln('')
+    p.text(dt)
+    readyToRip(p)
+    p.close()
+
 def printImg(filehash):
     app.logger.info(filehash)
-    dt = datetime.strptime(get_timestamp(filehash), '%Y-%m-%d %H:%M:%S')
-    # p = Serial(devfile='/dev/ttyS0', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1.00, dsrdtr=True)
-    # p.image('./static/converted/' + filehash + '.bmp')
-    # p.textln('')
-    # p.text(dt)
-    # readyToRip(p)
-    # p.close()
+    if USE_PRINTER:
+        printToPrinter(filehash)
     time.sleep(3)
     app.logger.info('printed')
     mark_as_printed(filehash)
