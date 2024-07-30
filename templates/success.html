@@ -1,0 +1,80 @@
+<html>
+<head>
+    <title>Success</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
+
+    <style>
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .image-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 360px;
+            max-height: 640px;
+            border: 2px solid #000;
+            box-sizing: border-box;
+        }
+
+        .uploaded-img {
+            max-width: 480px; /* Updated max-width */
+        }
+
+        .converted-img {
+            width: 100%;
+            max-width: 360px;
+            height: 100%;
+            max-height: 640px;
+            object-fit: contain;
+        }
+
+        .timestamp {
+            text-align: center;
+            font-size: 32px;
+            width: 100%;
+        }
+        .print-button {
+            font-size: 36px;
+            border-radius: 4px;
+            background-color: green;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+<h1 style="text-align:center;">File uploaded successfully</h1>
+<p style="text-align:center;">File Name: {{filename}}</p>
+
+<div class="image-container">
+
+    <div style="text-align:center;">
+        <h3>Uploaded Image</h3>
+        <img class="uploaded-img" src="{{ url_for('static', filename='uploads/' + filehash + extension) }}"
+             alt="Uploaded Image">
+    </div>
+
+    <div style="text-align:center;">
+        <h3>Converted Image</h3>
+        <div class="image-box">
+            <img class="converted-img" src="{{ url_for('static', filename='converted/' + filehash + '.bmp') }}"
+                 alt="Converted Image">
+        </div>
+        <div class="timestamp">
+            {{timestamp}}
+        </div>
+    </div>
+
+
+</div>
+<div style="text-align:center;">
+        <form action="{{ url_for('print') }}" method="get">
+        <input type="hidden" name="filehash" value="{{filehash}}">
+        <button class="print-button" type="submit">Print</button>
+    </form>
+</div>
+</body>
+</html>

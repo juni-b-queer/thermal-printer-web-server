@@ -1,0 +1,54 @@
+<html>
+<head>
+    <title>Printing</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
+    <style>
+        .refresh-button {
+            font-size: 24px;
+            border-radius: 4px;
+            background-color: blue;
+            color: white;
+            margin-top: 8px;
+        }
+
+        .converted-img {
+            /*width: 100%;*/
+            max-width: 360px;
+            /*height: 100%;*/
+            max-height: 640px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+
+<h1 style="text-align:center;">
+    {% if queuePlace == 0 %}
+    Your image has been printed
+    {% else %}
+    Waiting to print
+    {% endif %}
+</h1>
+
+{% if queuePlace != 1 and queuePlace != 0 %}
+<h2 style="text-align:center;">
+    Place in Queue: {{queuePlace}}
+</h2>
+{% endif %}
+
+<img class="converted-img" src="{{ url_for('static', filename='converted/' + filehash + '.bmp') }}"
+     alt="Converted Image">
+
+{% if queuePlace != 1 %}
+<div style="text-align:center;">
+        <form action="{{ url_for('print') }}" method="get">
+            <input type="hidden" name="filehash" value="{{filehash}}">
+            <button class="refresh-button" type="submit">Refresh</button>
+        </form>
+</div>
+{% endif %}
+
+
+</body>
+</html>

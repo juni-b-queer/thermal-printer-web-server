@@ -1,0 +1,124 @@
+<html>
+<head>
+    <title>Upload to Print</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
+
+    <style>
+        .custom-file-upload {
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .custom-file-upload:hover {
+            transform: scale(1.04);
+        }
+
+        .hidden {
+            display: none;
+        }
+        .accept-button{
+            background-color: darkgreen;
+            color: white;
+        }
+        .text-block{
+            width: 640px;
+            font-size: 24px;
+            margin: 0 auto;
+        }
+        .text-warning{
+            color: red;
+            font-weight: bold;
+            font-size: 32px;
+        }
+    </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+
+
+<div style="text-align: center;">
+    <h1>Upload to Print</h1>
+    <div id="text-block" class="text-block">
+        <div class="text-warning">
+            !WARNING!
+        </div>
+        Any and all images uploaded will be fully visible and exposed to anyone on the network. Please refrain from uploading inappropriate images <3.
+    </div>
+    <button id="accept-button" class="simple-button accept-button">Accept</button>
+
+    <div id="file-upload-section" class="hidden">
+        <input type="file" id="file-upload" style="display: none;"/>
+        <button id="choose-file-button" class="custom-file-upload" style="background-color: blue; color:white;">Choose
+            file
+        </button>
+        <button id="upload-file-button" class="custom-file-upload hidden"
+                style="background-color: green; color: white;">Upload file
+        </button>
+        <button id="select-different-file" class="custom-file-upload hidden"
+                style="background-color: red; color: white;">Select different file
+        </button>
+    </div>
+</div>
+
+
+<script>
+    var acceptButton = document.getElementById("accept-button");
+    var acceptText = document.getElementById("text-block");
+    var fileUploadSection = document.getElementById("file-upload-section");
+    var fileUpload = document.getElementById("file-upload");
+    var chooseFileButton = document.getElementById("choose-file-button");
+    var uploadFileButton = document.getElementById("upload-file-button");
+    var selectDifferentFileButton = document.getElementById("select-different-file");
+
+    acceptButton.addEventListener("click", function () {
+        acceptButton.style.display = "none";
+        acceptText.style.display = "none";
+        fileUploadSection.style.display = "block";
+    });
+
+    chooseFileButton.addEventListener("click", function () {
+        fileUpload.click();
+    });
+
+    fileUpload.addEventListener("change", function () {
+        chooseFileButton.style.display = "none";
+        uploadFileButton.style.display = "inline-block";
+        selectDifferentFileButton.style.display = "inline-block";
+    });
+
+    selectDifferentFileButton.addEventListener("click", function () {
+        chooseFileButton.style.display = "inline-block";
+        uploadFileButton.style.display = "none";
+        selectDifferentFileButton.style.display = "none";
+        fileUpload.value = ""; // clear the current file upload value
+        fileUpload.click(); // open the file dialog
+    });
+
+    uploadFileButton.addEventListener("click", function () {
+        if (fileUpload.files.length > 0) {
+            var formData = new FormData();
+            formData.append("file", fileUpload.files[0]);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/upload", true);
+
+            xhr.onload = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // The request has been completed successfully
+                    var response = JSON.parse(xhr.responseText);
+                    if (response && response.redirect) {
+                        // If the response contains a "redirect" field, redirect the browser to that URL
+                        window.location = response.redirect;
+                    }
+                }
+            };
+
+            xhr.send(formData);
+        }
+    });
+</script>
+
+</body>
+</html>

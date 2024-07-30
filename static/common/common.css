@@ -1,0 +1,34 @@
+/* common.css */
+
+.navbar {
+    overflow: hidden;
+    background-color: #333;
+}
+
+.navbar a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+body {
+    text-align: center;
+}
+
+.form-wrapper {
+    display: inline-block;
+    margin-right: 10px; /* To add some spacing between the forms */
+    margin-top: 8px;
+}
+
+.simple-button{
+    font-size: 16px;
+    margin:4px;
+    border-radius: 4px;
+    padding:6px;
+    text-decoration: none !important;
+
+}
