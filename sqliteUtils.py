@@ -1,8 +1,9 @@
 import sqlite3
 
+DB_PATH='/home/pi/WebServer/data.db'
 
 def setup_sqlite():
-    conn = sqlite3.connect('data.db')  # Creates `data.db` file if it doesn't exist
+    conn = sqlite3.connect(DB_PATH)  # Creates `data.db` file if it doesn't exist
     c = conn.cursor()
     c.execute('''
               CREATE TABLE IF NOT EXISTS print_queue
@@ -16,7 +17,7 @@ def setup_sqlite():
 
 
 def insert_to_db(filehash):
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("INSERT INTO print_queue (filehash) VALUES (?)", (filehash,))
     conn.commit()
@@ -24,16 +25,23 @@ def insert_to_db(filehash):
 
 
 def count_unprinted_rows():
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT COUNT(*) FROM print_queue WHERE printed=0")
     count = c.fetchone()[0]
     conn.close()
     return count
 
+def count_printed_rows():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM print_queue WHERE printed=1")
+    count = c.fetchone()[0]
+    conn.close()
+    return count
 
 def count_unprinted_before_hash(filehash):
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT id FROM print_queue WHERE filehash=?", (filehash,))
     row_id = c.fetchone()
@@ -46,7 +54,7 @@ def count_unprinted_before_hash(filehash):
 
 
 def hash_exists(filehash):
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT 1 FROM print_queue WHERE filehash=?", (filehash,))
     exists = c.fetchone() is not None
@@ -55,7 +63,7 @@ def hash_exists(filehash):
 
 
 def is_printed(filehash):
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT printed FROM print_queue WHERE filehash=?", (filehash,))
     printed = c.fetchone()
@@ -66,16 +74,24 @@ def is_printed(filehash):
 
 
 def get_unprinted_hashes():
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT filehash FROM print_queue WHERE printed=0 ORDER BY timestamp ASC LIMIT 5")
+    c.execute("SELECT filehash FROM print_queue WHERE printed=0 ORDER BY timestamp ASC LIMIT 10")
+    hashes = [row[0] for row in c.fetchall()]
+    conn.close()
+    return hashes
+    
+def get_printed_hashes():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT filehash FROM print_queue WHERE printed=1 ORDER BY timestamp DESC LIMIT 10")
     hashes = [row[0] for row in c.fetchall()]
     conn.close()
     return hashes
 
 def get_next_unprinted_hash():
     """Return the next filehash in the print queue that has not been printed yet."""
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT filehash FROM print_queue WHERE printed=0 ORDER BY timestamp ASC LIMIT 1")
     result = c.fetchone()
@@ -85,7 +101,7 @@ def get_next_unprinted_hash():
 
 def mark_as_printed(filehash):
     """Set the printed flag to True for the specified filehash in the print queue."""
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("UPDATE print_queue SET printed=1 WHERE filehash=?", (filehash,))
     conn.commit()
@@ -94,7 +110,7 @@ def mark_as_printed(filehash):
 
 def get_timestamp(filehash):
     """Return the timestamp for the specified filehash in the print queue."""
-    conn = sqlite3.connect('data.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT timestamp FROM print_queue WHERE filehash=?", (filehash,))
     result = c.fetchone()

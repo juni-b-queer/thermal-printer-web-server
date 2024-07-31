@@ -27,13 +27,13 @@
 </button>
 
 <button class="simple-button">
-    <a href="{{ url_for('previous') }}">View Printed Imaged</a>
+    <a href="{{ url_for('index') }}">View Print Queue</a>
 </button>
 
 {% if hashes %}
-<h3> Current Print queue:</h3>
+<h3> Recent Prints:</h3>
     <div>
-        {{total}} images in print queue
+        {{total}} images printed
     </div>
 {% for hash in hashes %}
 <div>
@@ -45,7 +45,7 @@
 <hr>
 {% endfor %}
 {% else %}
-<p>No images in print queue.</p>
+<p>No images printed</p>
 {% endif %}
 
 </div>

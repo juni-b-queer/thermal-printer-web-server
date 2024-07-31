@@ -49,6 +49,10 @@
 </div>
 {% endif %}
 
+<form action="{{ url_for('cancel') }}" method="get">
+            <input type="hidden" name="filehash" value="{{filehash}}">
+            <button class="refresh-button" type="submit">Cancel</button>
+        </form>
 
 </body>
 </html>
