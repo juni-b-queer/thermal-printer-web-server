@@ -19,8 +19,7 @@ def getFilenameWithoutExtension(filename):
     return filename_base
 
 def getFileExtension(filename):
-    filename_base, filename_ext = os.path.splitext(filename)
-    return filename_ext
+    return os.path.splitext(filename)[1]
 
 def allowed_file(filename):
     return '.' in filename and \

@@ -4,3 +4,4 @@ static/uploads
 .idea
 __pycache__
 data.db
+flask_stuff/__pycache__

@@ -54,5 +54,10 @@
             <button class="refresh-button" type="submit">Cancel</button>
         </form>
 
+<form action="{{ url_for('reprint') }}" method="get">
+            <input type="hidden" name="filehash" value="{{filehash}}">
+            <button class="refresh-button" type="submit">Reprint</button>
+        </form>
+
 </body>
 </html>

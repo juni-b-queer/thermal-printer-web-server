@@ -1,6 +1,7 @@
 import sqlite3
 
-DB_PATH='/home/pi/WebServer/data.db'
+DB_PATH='./data.db'
+# DB_PATH='/home/pi/WebServer/data.db'
 
 def setup_sqlite():
     conn = sqlite3.connect(DB_PATH)  # Creates `data.db` file if it doesn't exist
@@ -10,16 +11,24 @@ def setup_sqlite():
               (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                timestamp TEXT DEFAULT (datetime('now','localtime')), 
                filehash TEXT NOT NULL, 
-               printed INTEGER DEFAULT 0)
+               printed INTEGER DEFAULT 0,
+               original_ext TEXT NOT NULL)
               ''')  # Creates the table if it does not exist
     conn.commit()
     conn.close()
 
 
-def insert_to_db(filehash):
+def insert_to_db(filehash, originalExt):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("INSERT INTO print_queue (filehash) VALUES (?)", (filehash,))
+    c.execute("INSERT INTO print_queue (filehash, original_ext) VALUES (?, ?)", (filehash, originalExt,))
+    conn.commit()
+    conn.close()
+
+def delete_row(filehash):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("DELETE FROM print_queue WHERE filehash=?", (filehash,))
     conn.commit()
     conn.close()
 
@@ -108,11 +117,29 @@ def mark_as_printed(filehash):
     conn.close()
 
 
+def set_printed_status(filehash, printed = 1):
+    """Set the printed flag to True for the specified filehash in the print queue."""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE print_queue SET printed=? WHERE filehash=?", (printed, filehash,))
+    conn.commit()
+    conn.close()
+
+
 def get_timestamp(filehash):
     """Return the timestamp for the specified filehash in the print queue."""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT timestamp FROM print_queue WHERE filehash=?", (filehash,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None
+
+def get_originalExt(filehash):
+    """Return the timestamp for the specified filehash in the print queue."""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT original_ext FROM print_queue WHERE filehash=?", (filehash,))
     result = c.fetchone()
     conn.close()
     return result[0] if result else None

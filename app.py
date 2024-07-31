@@ -1,3 +1,4 @@
+import glob
 from datetime import datetime
 import os
 import time
@@ -7,7 +8,8 @@ from werkzeug.utils import secure_filename
 
 from flask_stuff.img_processing import convertJpgToBmp
 from sqliteUtils import setup_sqlite, insert_to_db, hash_exists, get_unprinted_hashes, is_printed, \
-    count_unprinted_before_hash, count_unprinted_rows, mark_as_printed, get_next_unprinted_hash, get_timestamp, get_printed_hashes, count_printed_rows
+    count_unprinted_before_hash, count_unprinted_rows, mark_as_printed, get_next_unprinted_hash, get_timestamp, \
+    delete_row, get_printed_hashes, count_printed_rows, get_originalExt, set_printed_status
 from flask_stuff.utils import getFilenameWithoutExtension, allowed_file, hashFileName, getFileExtension
 import threading
 import board
@@ -15,16 +17,33 @@ import neopixel
 from escpos.printer import Serial
 import RPi.GPIO as GPIO
 
+USE_PRINTER = True
+IS_PRINTING = False
+
+print_event = threading.Event()
+
+setup_sqlite()
+
+# UPLOAD_FOLDER = './static/uploads'
+UPLOAD_FOLDER = '/home/pi/WebServer/static/uploads'
+# CONVERT_FOLDER = './static/converted'
+CONVERT_FOLDER = '/home/pi/WebServer/static/converted'
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# region neopixels
 GPIO.setmode(GPIO.BCM)
 
 GPIO.setup(26, GPIO.OUT)
 
 def printerOn():
     GPIO.output(26, GPIO.LOW)
+    app.logger.info('Printer on')
 
 def printerOff():
     GPIO.output(26, GPIO.HIGH)
-    
+    app.logger.info('Printer off')
+
 printerOff()
 
 pixels = neopixel.NeoPixel(board.D18, 13)
@@ -57,6 +76,7 @@ def setRing(color):
     for i in range(12):
         pixels[i+1] = color
     pixels.show()
+    return True
 
 def flashRing(c, flashes = 5):
     global OFF
@@ -76,20 +96,9 @@ def lightNpixels(color, count):
             pixels[i+1] = color
         pixels.show()
 
-USE_PRINTER = True
-IS_PRINTING = False
-#relayPrinter = None
-#if USE_PRINTER:
-    #relayPrinter = LED(26)
+# endregion
 
-print_event = threading.Event()
-
-setup_sqlite()
-
-UPLOAD_FOLDER = '/home/pi/WebServer/static/uploads'
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
+# region printing
 
 def readyToRip(p):
     for i in range(4):
@@ -99,7 +108,7 @@ def readyToRip(p):
 def printToPrinter(filehash):
     dt = datetime.strptime(get_timestamp(filehash), '%Y-%m-%d %H:%M:%S')
     p = Serial(devfile='/dev/ttyS0', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1.00, dsrdtr=True)
-    p.image('/home/pi/WebServer/static/converted/' + filehash + '.bmp')
+    p.image(CONVERT_FOLDER + '/' + filehash + '.bmp')
     p.textln('')
     p.text(dt.ctime())
     readyToRip(p)
@@ -132,11 +141,40 @@ def checkPrintables():
             printerOff()
             IS_PRINTING = False
             print_event.clear()
+        elif not os.path.isfile(CONVERT_FOLDER + '/' + nextHash + '.bmp'):
+            hashExt = get_originalExt(nextHash)
+            uploadExists = os.path.isfile(UPLOAD_FOLDER + '/' + nextHash + hashExt)
+            if uploadExists:
+                convertJpgToBmp(nextHash + hashExt)
+            else:
+                delete_row(nextHash)
         else:
             printImg(nextHash)
         
-        time.sleep(1)
+        time.sleep(10)
 
+# endregion
+
+# region fileManagement
+
+def findOriginalFile(filehash):
+    path = UPLOAD_FOLDER + '/'
+    file_list = glob.glob(os.path.join(path, filehash + '.*'))
+    try:
+        filename_with_path = next(iter(file_list))
+    except StopIteration:
+        filename_with_path = None
+
+    if filename_with_path is None:
+        print('No file matched the pattern')
+        return False
+
+    return (filename_with_path.split('/')[-1]).split('\\')[-1]
+
+
+# endregion
+
+# region routes
 @app.route('/')
 def index():
     hashes = get_unprinted_hashes()
@@ -190,6 +228,11 @@ def cancel():
     mark_as_printed(filehash)
     return redirect(url_for('index'))
 
+@app.route('/reprint')
+def reprint():
+    filehash = request.args.get('filehash')
+    set_printed_status(filehash, 0)
+    return redirect(url_for('index'))
 
 @app.route('/print')
 def print():
@@ -197,10 +240,10 @@ def print():
     filehash = request.args.get('filehash')
     if (filehash == None or filehash == ""):
         return redirect(url_for('upload'))
-    path = './static/converted/' + filehash
     # send to print queue
-    if (hash_exists(filehash) == False):
-        insert_to_db(filehash)
+    if not hash_exists(filehash):
+        originalExt = getFileExtension(findOriginalFile(filehash))
+        insert_to_db(filehash, originalExt)
         if IS_PRINTING == False:
             try:
                 print_event.set()
@@ -222,6 +265,7 @@ def print():
                            filehash=filehash
                            )
 
+# endregion
 
 setLED(GREEN)
 

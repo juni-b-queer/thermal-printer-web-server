@@ -5,6 +5,10 @@ from PIL import Image
 
 from flask_stuff.utils import getFilenameWithoutExtension
 
+# UPLOAD_FOLDER = './static/uploads'
+UPLOAD_FOLDER = '/home/pi/WebServer/static/uploads'
+# CONVERT_FOLDER = './static/converted'
+CONVERT_FOLDER = '/home/pi/WebServer/static/converted'
 
 def resizeImage(path, width=0, height=0):
     importedImage = Image.open(path)
@@ -23,8 +27,8 @@ def resizeImage(path, width=0, height=0):
 
 
 def convertJpgToBmp(filename):
-    path = './static/uploads/' + filename
+    path = UPLOAD_FOLDER + '/' + filename
     resizedImage = resizeImage(path , 640, 360)
     im = resizedImage.convert('1')
-    im.save("./static/converted/" + getFilenameWithoutExtension(filename) + ".bmp")
+    im.save(CONVERT_FOLDER + '/' + getFilenameWithoutExtension(filename) + ".bmp")
     return True
