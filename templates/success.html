@@ -36,18 +36,39 @@
             font-size: 32px;
             width: 100%;
         }
+
         .print-button {
-            font-size: 36px;
-            border-radius: 4px;
+            font-size: 16px;
             background-color: green;
             color: white;
         }
+
+        .cancel-button {
+            font-size: 16px;
+            background-color: red;
+            color: black;
+        }
+
     </style>
 </head>
 <body>
 {% include 'navbar.html' %}
 <h1 style="text-align:center;">File uploaded successfully</h1>
 <p style="text-align:center;">File Name: {{filename}}</p>
+<p style="text-align:center;">File Hash: {{filehash}}</p>
+
+<div style="text-align:center;">
+    <div class="buttons">
+
+        <button class="btn print-button">
+            <a href="{{url_for('print', filehash=filehash)}}">Print</a>
+        </button>
+
+        <button class="btn cancel-button">
+            <a href="{{url_for('upload')}}">Go Back</a>
+        </button>
+    </div>
+</div>
 
 <div class="image-container">
 
@@ -70,11 +91,6 @@
 
 
 </div>
-<div style="text-align:center;">
-        <form action="{{ url_for('print') }}" method="get">
-        <input type="hidden" name="filehash" value="{{filehash}}">
-        <button class="print-button" type="submit">Print</button>
-    </form>
-</div>
+
 </body>
 </html>

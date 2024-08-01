@@ -4,66 +4,79 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
 
     <style>
+        .text-block-container {
+            text-align: center;
+        }
+
         .custom-file-upload {
             display: inline-block;
             padding: 6px 12px;
             cursor: pointer;
             border-radius: 4px;
             transition: all 0.3s ease-in-out;
+            color: white;
         }
 
         .custom-file-upload:hover {
             transform: scale(1.04);
         }
 
-        .hidden {
-            display: none;
-        }
-        .accept-button{
+        .accept-button {
             background-color: darkgreen;
             color: white;
         }
-        .text-block{
+
+        .text-block {
             width: 640px;
             font-size: 24px;
             margin: 0 auto;
         }
-        .text-warning{
+
+        .text-warning {
             color: red;
             font-weight: bold;
             font-size: 32px;
         }
+
+        .hidden {
+            display: none;
+        }
+
+        #file-upload {
+            display: none;
+        }
+
+        #choose-file-button {
+            background-color: blue;
+        }
+
+        #upload-file-button {
+            background-color: green;
+        }
+
+        #select-different-file {
+            background-color: red;
+        }
+
     </style>
 </head>
 <body>
 {% include 'navbar.html' %}
-
-
-<div style="text-align: center;">
+<div class="text-block-container">
     <h1>Upload to Print</h1>
     <div id="text-block" class="text-block">
-        <div class="text-warning">
-            !WARNING!
-        </div>
-        Any and all images uploaded will be fully visible and exposed to anyone on the network. Please refrain from uploading inappropriate images <3.
+        <div class="text-warning"> !WARNING!</div>
+        Any and all images uploaded will be fully visible and exposed to anyone on the network. Please refrain from
+        uploading inappropriate images <3.
     </div>
     <button id="accept-button" class="simple-button accept-button">Accept</button>
-
     <div id="file-upload-section" class="hidden">
-        <input type="file" id="file-upload" style="display: none;"/>
-        <button id="choose-file-button" class="custom-file-upload" style="background-color: blue; color:white;">Choose
-            file
-        </button>
-        <button id="upload-file-button" class="custom-file-upload hidden"
-                style="background-color: green; color: white;">Upload file
-        </button>
-        <button id="select-different-file" class="custom-file-upload hidden"
-                style="background-color: red; color: white;">Select different file
-        </button>
+        <input type="file" id="file-upload">
+        <button id="choose-file-button" class="custom-file-upload">Choose file</button>
+        <button id="upload-file-button" class="custom-file-upload hidden">Upload file</button>
+        <button id="select-different-file" class="custom-file-upload hidden">Select different file</button>
     </div>
 </div>
-
-
 <script>
     var acceptButton = document.getElementById("accept-button");
     var acceptText = document.getElementById("text-block");
@@ -93,8 +106,8 @@
         chooseFileButton.style.display = "inline-block";
         uploadFileButton.style.display = "none";
         selectDifferentFileButton.style.display = "none";
-        fileUpload.value = ""; // clear the current file upload value
-        fileUpload.click(); // open the file dialog
+        fileUpload.value = "";
+        fileUpload.click();
     });
 
     uploadFileButton.addEventListener("click", function () {
@@ -105,20 +118,20 @@
             xhr.open("POST", "/upload", true);
 
             xhr.onload = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    // The request has been completed successfully
-                    var response = JSON.parse(xhr.responseText);
-                    if (response && response.redirect) {
-                        // If the response contains a "redirect" field, redirect the browser to that URL
-                        window.location = response.redirect;
+                if (xhr.status === 200 && xhr.getResponseHeader("Content-Type") === "application/json") {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.redirect) {
+                            window.location = response.redirect;
+                        }
+                    } catch (e) {
+                        console.error("Can't parse server response: ", e);
                     }
                 }
             };
-
             xhr.send(formData);
         }
     });
 </script>
-
 </body>
 </html>

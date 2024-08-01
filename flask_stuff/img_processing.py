@@ -5,10 +5,10 @@ from PIL import Image
 
 from flask_stuff.utils import getFilenameWithoutExtension
 
-# UPLOAD_FOLDER = './static/uploads'
-UPLOAD_FOLDER = '/home/pi/WebServer/static/uploads'
-# CONVERT_FOLDER = './static/converted'
-CONVERT_FOLDER = '/home/pi/WebServer/static/converted'
+UPLOAD_FOLDER = './static/uploads'
+# UPLOAD_FOLDER = '/home/pi/WebServer/static/uploads'
+CONVERT_FOLDER = './static/converted'
+# CONVERT_FOLDER = '/home/pi/WebServer/static/converted'
 
 def resizeImage(path, width=0, height=0):
     importedImage = Image.open(path)

@@ -2,51 +2,127 @@
 <body>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
 <style>
-
-    .converted-img {
-        /*width: 100%;*/
-        max-width: 360px;
-        /*height: 100%;*/
-        max-height: 640px;
-        object-fit: contain;
+    .subheader {
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: -12px;
+        margin-bottom: 12px;
     }
 
-    /*button {*/
-    /*    display: block;*/
-    /*    margin: 0 auto;*/
-    /*}*/
+    .flex-container {
+        display: flex;
+    }
+
+    .flex-container > div {
+        /*border: 1px solid #000;*/
+        padding: 20px;
+        margin: 5px;
+    }
+
+    .img-container {
+        display: flex;
+        padding: 8px 0;
+        border: 1px black solid;
+        margin-bottom: 4px;
+    }
+
+    .flex-item {
+        flex: 1;
+    }
+
+    .flex-center {
+        flex: 2;
+    }
+
+
 </style>
 
 {% include 'navbar.html' %}
 
 <div>
     <h1>Shitty Thermal Printer Web Server</h1>
-
-<button class="simple-button">
-    <a href="{{ url_for('upload') }}">Upload new image</a>
-</button>
-
-<button class="simple-button">
-    <a href="{{ url_for('previous') }}">View Printed Imaged</a>
-</button>
-
-{% if hashes %}
-<h3> Current Print queue:</h3>
     <div>
-        {{total}} images in print queue
+        <button class="btn upload-btn">
+            <a href="{{ url_for('upload') }}">Upload new image</a>
+        </button>
     </div>
-{% for hash in hashes %}
-<div>
-    <a href="{{ url_for('print', filehash=hash) }}">
-        <img class="converted-img" src="{{ url_for('static', filename='converted/' + hash + '.bmp') }}"
-             alt="Converted Image">
-    </a>
-</div>
-<hr>
-{% endfor %}
-{% else %}
-<p>No images in print queue.</p>
-{% endif %}
+
+
+    <div>
+        <button class="btn view-btn">
+            <a href="{{ url_for('queue') }}">View Print Queue</a>
+        </button>
+        <button class="btn view-btn">
+            <a href="{{ url_for('previous') }}">View Printed Images</a>
+        </button>
+    </div>
+
+
+    <div class="flex-container">
+
+        <div class="flex-item">
+            <h2>
+                Print Queue
+            </h2>
+            {% if queuedHashes %}
+
+            <div class="subheader">
+                {{queuedTotal}} images printed
+            </div>
+            {% for queuedHash, count_printed in queuedHashes %}
+            <div>
+                <div class="img-container">
+                    <!--                    <div class="flex-item">-->
+                    <!--                        hi-->
+                    <!--                    </div>-->
+                    <a class="flex-item" href="{{ url_for('print', filehash=queuedHash) }}">
+                        <img class="converted-img"
+                             src="{{ url_for('static', filename='converted/' + queuedHash + '.bmp') }}"
+                             alt="Converted Image">
+                    </a>
+                </div>
+
+            </div>
+            {% endfor %}
+            {% else %}
+            <h3>No images in queue</h3>
+            {% endif %}
+        </div>
+
+        <!--        <div class="flex-center">Column 2</div>-->
+
+        <div class="flex-item">
+            <h2>
+                Previous Prints
+            </h2>
+            {% if printedHashes %}
+            <div class="subheader">
+                {{printedTotal}} images uploaded
+                <br>
+                {{totalImagesPrinted}} total prints
+
+            </div>
+            {% for printedHash, count_printed in printedHashes %}
+            <div>
+
+
+                <div class="img-container">
+                    <!--                    <div class="flex-item">-->
+                    <!--                        hi-->
+                    <!--                    </div>-->
+                    <a class="flex-item" href="{{ url_for('print', filehash=printedHash) }}">
+                        <img class="converted-img"
+                             src="{{ url_for('static', filename='converted/' + printedHash + '.bmp') }}"
+                             alt="Converted Image">
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <h3>No images printed</h3>
+            {% endif %}
+        </div>
+    </div>
 
 </div>
 

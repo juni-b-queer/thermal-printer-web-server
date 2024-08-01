@@ -2,10 +2,27 @@
 <body>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
 <style>
+
     .converted-img {
+        /*width: 100%;*/
         max-width: 360px;
+        /*height: 100%;*/
         max-height: 640px;
         object-fit: contain;
+    }
+
+    /*button {*/
+    /*    display: block;*/
+    /*    margin: 0 auto;*/
+    /*}*/
+
+    .queue-position {
+        float: left;
+        font-weight: bold;
+        padding: 8px;
+        font-size: 18px;
+        border-right: 1px black solid;
+        border-bottom: 1px black solid;
     }
 
     .image-grid {
@@ -51,16 +68,54 @@
     </button>
 
     <button class="btn view-btn">
-        <a href="{{ url_for('queue') }}">View Print Queue</a>
+        <a href="{{ url_for('previous') }}">View Printed Images</a>
     </button>
 
     {% if hashes %}
-    <h2>
-        {{totalImagesPrinted}} total prints
-    </h2>
-    <h3>
-        {{ total }} images uploaded
-    </h3>
+    <h3> Current Print queue:</h3>
+    <div>
+        {{total}} images in print queue
+    </div>
+    <div class="pagination-buttons">
+        <div>
+            {% if page > 1 %}
+            <button class="btn page-btn">
+                <a href="{{ url_for('previous', page=page-1) }}">Back</a>
+            </button>
+            {% else %}
+            <!-- adding empty div to ensure the 'Next' button stays aligned -->
+            <div class="page-btn"></div>
+            {% endif %}
+        </div>
+
+        <div>
+            {% if total > page * 9 %}
+            <button class="btn page-btn">
+                <a href="{{ url_for('previous', page=page+1) }}">Next</a>
+            </button>
+            {% else %}
+            <!-- adding empty div to ensure the 'Back' button stays aligned -->
+            <div class="page-btn"></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="image-grid">
+        {% for filehash, count_printed in hashes %}
+        <div class="image-container">
+            <div class="queue-position">{{ (page - 1) * 9 + loop.index }}</div>
+            <h4>Print count: {{ count_printed }}</h4>
+            <a
+                    href="{{ url_for('print', filehash=filehash) }}">
+                <img class="converted-img" src="{{ url_for('static', filename='converted/' + filehash + '.bmp') }}"
+                     alt="Converted Image">
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No images in print queue.</p>
+    {% endif %}
 
     <div class="pagination-buttons">
         <div>
@@ -86,48 +141,6 @@
         </div>
     </div>
 
-
-    <div class="image-grid">
-        {% for filehash, count_printed in hashes %}
-        <div class="image-container">
-            <h4>Print count: {{ count_printed }}</h4>
-            <a href="{{ url_for('print', filehash=filehash) }}">
-                <img class="converted-img" src="{{ url_for('static', filename='converted/' + filehash + '.bmp') }}"
-                     alt="Converted Image">
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p>No images printed</p>
-    {% endif %}
-
-    <div>
-        <div class="pagination-buttons">
-            <div>
-                {% if page > 1 %}
-                <button class="btn page-btn">
-                    <a href="{{ url_for('previous', page=page-1) }}">Back</a>
-                </button>
-                {% else %}
-                <!-- adding empty div to ensure the 'Next' button stays aligned -->
-                <div class="page-btn"></div>
-                {% endif %}
-            </div>
-
-            <div>
-                {% if total > page * 9 %}
-                <button class="btn page-btn">
-                    <a href="{{ url_for('previous', page=page+1) }}">Next</a>
-                </button>
-                {% else %}
-                <!-- adding empty div to ensure the 'Back' button stays aligned -->
-                <div class="page-btn"></div>
-                {% endif %}
-            </div>
-        </div>
-
-    </div>
 </div>
 
 </body>
